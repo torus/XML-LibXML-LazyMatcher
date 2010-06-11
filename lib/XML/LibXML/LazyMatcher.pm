@@ -49,18 +49,20 @@ None.
 =head2 M (tagname => [sub_matcher, ...])
 
 Returns a matcher function.  This returned function takes an
-XML::LibXML::Node object as an argument and test the tag name.  Then,
-applies the node to the all C<sub_matcher>s.  If all C<sub_matcher>s
-return true value then the C<M()> returns 1.  Otherwise returns 0.
+XML::LibXML::Node object as an argument.  First, The matcher checks if
+the tag name of the passed node is correct, then, applies the node to
+all C<sub_matcher>s.  If all C<sub_matcher>s return true value then
+the C<M()> returns 1.  Otherwise returns 0.
 
-You can define some action as a sub_matcher.  Then, a typical
-C<sub_matcher> may be like this:
+You can define some action as a sub_matcher.  A typical C<sub_matcher>
+may be like this:
 
     sub {
-        my $node = shift;
+        my $node = shift;	# $node should be a XML::LibXML::Node.
+    
         return 0 unless is_valid($node);
     
-        do_some_action();
+        do_some_action($node);
         return 1;
     }
 
@@ -93,9 +95,9 @@ sub M {
 
 =head2 C (sub_matcher, ...)
 
-Creates matcher function which tests all child nodes.  If a
+Creates a matcher function which tests all child nodes.  If a
 sub_matcher returns true value, then the C<C()> returns 1.  Otherwise
-return 0.
+returns 0.
 
 =cut
 
