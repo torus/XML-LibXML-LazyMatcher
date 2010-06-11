@@ -20,16 +20,25 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-use_ok ("XML::LibXML::LazyMatcher");
-
-    my $dom = XML::LibXML->load_xml (string => "<root><c1><c2>content</c2></c1></root>");
-
-    use XML::LibXML::LazyMatcher;
+    my $dom = XML::LibXML->load_xml (string => "<root><c1><c2>hello</c2><c3>world</c3></c1></root>");
+    my $matcher;
+    my ($c2content, $c3content);
     {
-        package XML::LibXML::LazyMatcher;
-        my $matcher = M (root => C (M (c1 => M (c2 => sub {$_[0]->textContent eq "content"}))));
-        my $valid = $matcher->($dom);
+	package XML::LibXML::LazyMatcher;
+	$matcher = M (root =>
+		      C (M (c1 =>
+			    C (M (c2 =>
+				  sub {
+				      $c2content = $_[0]->textContent;
+				      return 1;
+				  }),
+			       M (c3 =>
+				  sub {
+				      $c3content = $_[0]->textContent;
+				      return 1;
+				  })))));
     }
+    $matcher->($dom->documentElement);
 
 =head1 EXPORT
 
@@ -42,7 +51,18 @@ None.
 Returns a matcher function.  This returned function takes an
 XML::LibXML::Node object as an argument and test the tag name.  Then,
 applies the node to the all C<sub_matcher>s.  If all C<sub_matcher>s
-return true value then returns 1.  Otherwise returns 0.
+return true value then the C<M()> returns 1.  Otherwise returns 0.
+
+You can define some action as a sub_matcher.  Then, a typical
+C<sub_matcher> may be like this:
+
+    sub {
+        my $node = shift;
+        return 0 unless is_valid($node);
+    
+        do_some_action();
+        return 1;
+    }
 
 =cut
 
@@ -73,7 +93,9 @@ sub M {
 
 =head2 C (sub_matcher, ...)
 
-Creates matcher function which tests all children.
+Creates matcher function which tests all child nodes.  If a
+sub_matcher returns true value, then the C<C()> returns 1.  Otherwise
+return 0.
 
 =cut
 
