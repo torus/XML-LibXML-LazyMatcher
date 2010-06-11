@@ -3,9 +3,11 @@ package XML::LibXML::LazyMatcher;
 use warnings;
 use strict;
 
+use XML::LibXML;
+
 =head1 NAME
 
-XML::LibXML::LazyMatcher - The great new XML::LibXML::LazyMatcher!
+XML::LibXML::LazyMatcher - A simple XML matcher with lazy evaluation.
 
 =head1 VERSION
 
@@ -18,34 +20,89 @@ our $VERSION = '0.01';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
+use_ok ("XML::LibXML::LazyMatcher");
 
-Perhaps a little code snippet.
+    my $dom = XML::LibXML->load_xml (string => "<root><c1><c2>content</c2></c1></root>");
 
     use XML::LibXML::LazyMatcher;
-
-    my $foo = XML::LibXML::LazyMatcher->new();
-    ...
+    {
+        package XML::LibXML::LazyMatcher;
+        my $matcher = M (root => C (M (c1 => M (c2 => sub {$_[0]->textContent eq "content"}))));
+        my $valid = $matcher->($dom);
+    }
 
 =head1 EXPORT
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+None.
 
 =head1 SUBROUTINES/METHODS
 
-=head2 function1
+=head2 M (tagname => [sub_matcher, ...])
+
+Returns a matcher function.  This returned function takes an
+XML::LibXML::Node object as an argument and test the tag name.  Then,
+applies the node to the all C<sub_matcher>s.  If all C<sub_matcher>s
+return true value then returns 1.  Otherwise returns 0.
 
 =cut
 
-sub function1 {
+sub M {
+    my $tagname = shift;
+    my @matchers = @_;
+
+    sub {
+	my $elem = shift;
+
+	# warn "matching $tagname", $elem->nodeName;
+
+	return 0 unless ($elem->nodeName eq $tagname);
+
+	# warn "eating $tagname";
+
+	for my $m (@matchers) {
+	    if (ref ($m) eq "CODE") {
+		return 0 unless ($m->($elem)); # failure
+	    } else {
+		die "invalid matcher";
+	    }
+	}
+
+	return 1;
+    };
 }
 
-=head2 function2
+=head2 C (sub_matcher, ...)
+
+Creates matcher function which tests all children.
 
 =cut
 
-sub function2 {
+sub C {
+    my $alternate = sub {
+	my @children = @_;
+
+	sub {
+	    my $elem = shift;
+
+	    for my $m (@children) {
+		return 1 if ($m->($elem));
+	    }
+	    return 0;
+	}
+    };
+
+    my @children = @_;
+
+    sub {
+	my $parent = shift;
+
+	my $m = $alternate->(@children);
+	for (my $c = $parent->firstChild; $c; $c = $c->nextSibling) {
+	    return 0 unless $m->($c);
+	}
+
+	return 1;
+    }
 }
 
 =head1 AUTHOR
