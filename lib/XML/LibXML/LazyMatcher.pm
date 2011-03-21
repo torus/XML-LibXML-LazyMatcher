@@ -129,6 +129,34 @@ sub C {
     }
 }
 
+=head2 S (sub_matcher, ...)
+
+Creates a matcher function which test all child nodes sequentially.
+Every child nodes is tested by the appropriate C<sub_matcher>
+accordingly.  The returned matcher fails if one of C<sub_matcher>s
+fails.
+
+Also, this matcher ignores empty text node for convenience.
+
+=cut
+
+sub S {
+    my @children = @_;
+
+    sub {
+	my $parent = shift;
+
+	for (my $c = $parent->firstChild; $c; $c = $c->nextSibling) {
+	    next if ($c->nodeType == 3 && $c->textContent =~ /\s*/);
+	    return 0 unless $#children >= 0 && shift (@children)->($c);
+	}
+
+	return 0 if $#children >= 0;
+
+	return 1;
+    }
+}
+
 =head1 AUTHOR
 
 Toru Hisai, C<< <toru at torus.jp> >>
