@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More tests => 13;
 
 use XML::LibXML;
 
@@ -59,4 +59,24 @@ use_ok ("XML::LibXML::LazyMatcher");
     ok ($matcher->($dom->documentElement), "children");
     ok ($c2content eq "hello", "content");
     ok ($c3content eq "world", "content");
+}
+
+{
+    my $dom = XML::LibXML->load_xml (string => "<root><c1 key='1'/><c1 key='2'/></root>");
+    my $flag = [];
+    my $matcher;
+    {
+	package XML::LibXML::LazyMatcher;
+	$matcher = M (root =>
+		      C (M (c1 =>
+			    sub {
+				my $k = $_[0]->getAttribute ("key");
+				$flag->[$k] = 1;
+			    })));
+    }
+    ok ($matcher->($dom->documentElement), "repeating");
+    ok (!$flag->[0], "content");
+    ok ($flag->[1], "content");
+    ok ($flag->[2], "content");
+    ok (!$flag->[3], "content");
 }
