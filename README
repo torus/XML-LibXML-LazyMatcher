@@ -2,7 +2,7 @@ NAME
     XML::LibXML::LazyMatcher - A simple XML matcher with lazy evaluation.
 
 VERSION
-    Version 0.01
+    Version 0.02
 
 SYNOPSIS
         my $dom = XML::LibXML->load_xml (string => "<root><c1><c2>hello</c2><c3>world</c3></c1></root>");
@@ -33,10 +33,10 @@ SUBROUTINES/METHODS
     Returns a matcher function. This returned function takes an
     XML::LibXML::Node object as an argument. First, The matcher checks if
     the tag name of the passed node is correct, then, applies the node to
-    all `sub_matcher's. If all `sub_matcher's return true value then the
-    `M()' returns 1. Otherwise returns 0.
+    all "sub_matcher"s. If all "sub_matcher"s return true value then the
+    "M()" returns 1. Otherwise returns 0.
 
-    You can define some action as a sub_matcher. A typical `sub_matcher' may
+    You can define some action as a sub_matcher. A typical "sub_matcher" may
     be like this:
 
         sub {
@@ -50,18 +50,25 @@ SUBROUTINES/METHODS
 
   C (sub_matcher, ...)
     Creates a matcher function which tests all child nodes. If a sub_matcher
-    returns true value, then the `C()' returns 1. Otherwise returns 0.
+    returns true value, then the "C()" returns 1. Otherwise returns 0.
+
+  S (sub_matcher, ...)
+    Creates a matcher function which test all child nodes sequentially.
+    Every child nodes is tested by the appropriate "sub_matcher"
+    accordingly. The returned matcher fails if one of "sub_matcher"s fails.
+
+    Also, this matcher ignores empty text node for convenience.
 
 AUTHOR
-    Toru Hisai, `<toru at torus.jp>'
+    Toru Hisai, "<toru at torus.jp>"
 
 BUGS
     Please report any bugs or feature requests to
-    `bug-xml-libxml-lazymatcher at rt.cpan.org', or through the web
+    "bug-xml-libxml-lazymatcher at rt.cpan.org", or through the web
     interface at
-    http://rt.cpan.org/NoAuth/ReportBug.html?Queue=XML-LibXML-LazyMatcher. I
-    will be notified, and then you'll automatically be notified of progress
-    on your bug as I make changes.
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=XML-LibXML-LazyMatcher>.
+    I will be notified, and then you'll automatically be notified of
+    progress on your bug as I make changes.
 
 SUPPORT
     You can find documentation for this module with the perldoc command.
@@ -70,17 +77,21 @@ SUPPORT
 
     You can also look for information at:
 
-    * RT: CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=XML-LibXML-LazyMatcher
+    *   RT: CPAN's request tracker
 
-    * AnnoCPAN: Annotated CPAN documentation
-        http://annocpan.org/dist/XML-LibXML-LazyMatcher
+        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=XML-LibXML-LazyMatcher>
 
-    * CPAN Ratings
-        http://cpanratings.perl.org/d/XML-LibXML-LazyMatcher
+    *   AnnoCPAN: Annotated CPAN documentation
 
-    * Search CPAN
-        http://search.cpan.org/dist/XML-LibXML-LazyMatcher/
+        <http://annocpan.org/dist/XML-LibXML-LazyMatcher>
+
+    *   CPAN Ratings
+
+        <http://cpanratings.perl.org/d/XML-LibXML-LazyMatcher>
+
+    *   Search CPAN
+
+        <http://search.cpan.org/dist/XML-LibXML-LazyMatcher/>
 
 ACKNOWLEDGEMENTS
 LICENSE AND COPYRIGHT
